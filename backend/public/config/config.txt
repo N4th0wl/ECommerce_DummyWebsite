@@ -1,0 +1,11 @@
+# ShopVuln Configuration File
+# ⚠️ DO NOT EXPOSE THIS FILE
+
+DB_HOST=mysql
+DB_USER=root
+DB_PASS=rootpassword
+DB_NAME=shopvuln
+
+JWT_SECRET=super_secret_jwt_key_2024_do_not_share
+PAYMENT_API_KEY=pk_live_shopvuln_1234567890abcdef
+ADMIN_EMAIL=admin@shopvuln.local

@@ -1,0 +1,12 @@
+# Admin Notes - Internal Use Only
+# ⚠️ DO NOT EXPOSE THIS FILE
+
+Admin Panel: /admin/dashboard
+Default Admin: admin / admin123
+Backup Admin: bob_admin / bob2024!
+
+TODO:
+- Fix SQL injection in search endpoint (CRITICAL)
+- Sanitize review comments (XSS issue)
+- Move config.txt out of web root
+- Implement rate limiting on login
