@@ -1,5 +1,6 @@
 # ShopVuln Configuration File
-# ⚠️ DO NOT EXPOSE THIS FILE
+# DO NOT EXPOSE THIS FILE
+# FLAG: UMNCySec{C0nf1g_F1l3_L34k3d_Cr3ds}
 
 DB_HOST=mysql
 DB_USER=root

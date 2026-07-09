@@ -21,8 +21,8 @@ const ProtectedRoute = ({ children, adminOnly = false }) => {
 
 const AppRoutes = () => (
   <>
-    <div className="vuln-banner">
-      ⚠️ INTENTIONALLY VULNERABLE APPLICATION Do NOT Deploy in Production ⚠️
+    <div className="vuln-banner" style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)', color: 'var(--text-secondary)', padding: '6px 24px', textAlign: 'center', fontSize: '12px' }}>
+      New arrivals: Up to 40% off on all premium audio and monitors. Free shipping over $50.
     </div>
     <Navbar />
     <Routes>

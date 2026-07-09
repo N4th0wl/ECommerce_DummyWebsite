@@ -1,5 +1,6 @@
 # Admin Notes - Internal Use Only
-# ⚠️ DO NOT EXPOSE THIS FILE
+# DO NOT EXPOSE THIS FILE
+# FLAG: UMNCySec{4dm1n_N0t3s_1nt3rn4l_L34k}
 
 Admin Panel: /admin/dashboard
 Default Admin: admin / admin123

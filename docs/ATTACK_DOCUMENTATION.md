@@ -21,6 +21,28 @@
 
 ---
 
+## 🚩 CTF Flags
+
+Berikut adalah daftar flag `UMNCySec{}` yang dapat ditemukan selama workshop:
+
+| # | Flag | Vulnerability | Deskripsi / Cara Trigger |
+|---|------|---------------|--------------------------|
+| 1 | `UMNCySec{SQL_1nj3ct10n_Auth_Byp4ss_Succ3ss}` | SQL Injection (Auth Bypass) | Muncul di response login saat SQLi berhasil membypass password. |
+| 2 | `UMNCySec{UN10N_S3L3CT_Us3r_Dump_Compl3t3}` | SQL Injection (UNION) | Didapatkan dengan melakukan UNION SELECT pada product search untuk mendump database/flags. |
+| 3 | `UMNCySec{D4t4b4s3_S3cr3ts_3xtr4ct3d}` | SQL Injection (UNION) | Didapatkan dengan mengekstrak data dari tabel `site_config` menggunakan UNION SELECT. |
+| 4 | `UMNCySec{St0r3d_XSS_1n_R3v13w_F13ld}` | Stored XSS (Reviews) | Muncul ketika berhasil menginjeksi tag/event script pada input review produk. |
+| 5 | `UMNCySec{XSS_V1a_Us3r_B10_F13ld}` | Stored XSS (Bio) | Didapatkan saat mendaftar/update profile dengan memasukkan payload XSS di field bio. |
+| 6 | `UMNCySec{R0b0ts_Txt_R3c0n_Succ3ss}` | Google Dork / recon | Ditemukan di dalam file `robots.txt`. |
+| 7 | `UMNCySec{D4t4b4s3_B4ckup_F1l3_3xp0s3d}` | Information Disclosure | Ditemukan di dalam backup database `/backup/db_backup_2024.sql`. |
+| 8 | `UMNCySec{C0nf1g_F1l3_L34k3d_Cr3ds}` | Information Disclosure | Ditemukan di dalam file konfigurasi `/config/config.txt`. |
+| 9 | `UMNCySec{4dm1n_N0t3s_1nt3rn4l_L34k}` | Information Disclosure | Ditemukan di dalam admin notes `/admin/notes.txt`. |
+| 10 | `UMNCySec{1D0R_0th3r_Us3r_0rd3r_4cc3ss}` | IDOR (Orders) | Muncul saat berhasil mengakses pesanan milik user lain dengan mengganti `user_id`. |
+| 11 | `UMNCySec{JWT_T0k3n_F0rg3d_4dm1n_4cc3ss}` | JWT Token Forgery | Diberikan di admin panel saat user login menggunakan JWT token yang diforge memakai secret key yang bocor. |
+| 12 | `UMNCySec{Pl41nt3xt_P4ssw0rd_St0r4g3_F0und}` | Plaintext Password | Terlihat di halaman list user admin panel bahwa password disimpan polos. |
+| 13 | `UMNCySec{S3rv3r_1nf0_D1scl0sur3_H34lth}` | Information Disclosure | Ditemukan dengan mengakses endpoint `/api/health`. |
+
+---
+
 ## 🗺️ Arsitektur & URL Penting
 
 ```

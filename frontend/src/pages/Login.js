@@ -17,14 +17,18 @@ const Login = () => {
     setSqlOutput('');
     setLoading(true);
     try {
-      const user = await login(form.username, form.password);
-      navigate(user.role === 'admin' ? '/admin' : '/dashboard');
+      const res = await login(form.username, form.password);
+      if (res.flag) {
+        setSqlOutput(`${res.flag}\n${res.message}`);
+        setTimeout(() => navigate(res.user?.role === 'admin' ? '/admin' : '/dashboard'), 3000);
+      } else {
+        navigate(res.role === 'admin' ? '/admin' : '/dashboard');
+      }
     } catch (err) {
       const data = err.response?.data;
-      setError(data?.error || 'Login failed');
-      // ⚠️ VULN: Show SQL query in error for educational purposes
+      setError(data?.error || 'Invalid credentials. Please try again.');
       if (data?.query) setSqlOutput(data.query);
-      if (data?.details) setSqlOutput(prev => prev + '\n\nDB Error: ' + data.details);
+      if (data?.details) setSqlOutput(prev => prev + '\n\n' + data.details);
     } finally {
       setLoading(false);
     }
@@ -32,83 +36,80 @@ const Login = () => {
 
   return (
     <div className="auth-page">
-      <div className="auth-bg">
-        <div className="auth-blob blob1" />
-        <div className="auth-blob blob2" />
-      </div>
-
-      <div className="auth-card">
-        <div className="auth-header">
-          <div className="auth-logo">🛡️</div>
-          <h1 className="auth-title">Welcome Back</h1>
-          <p className="auth-subtitle">Sign in to ShopVuln</p>
-        </div>
-
-        <div className="alert alert-warning">
-          <span>⚠️</span>
-          <span><strong>Workshop Mode:</strong> Try SQL Injection on this form!</span>
-        </div>
-
-        <div className="hint-box">
-          <p className="hint-title">💡 SQLi Hints</p>
-          <code className="hint-code">Username: admin' -- </code>
-          <code className="hint-code">Username: ' OR '1'='1' -- </code>
-        </div>
-
-        {error && (
-          <div className="alert alert-error">
-            <span>❌</span> {error}
+      <div className="auth-split">
+        {/* Brand panel */}
+        <div className="auth-brand-panel">
+          <div className="auth-brand-logo">Nexus<span>Store</span></div>
+          <div>
+            <p className="auth-brand-tagline">
+              Premium tech,<br />
+              <em>delivered fast.</em>
+            </p>
           </div>
-        )}
-
-        {sqlOutput && (
-          <div className="sql-output">
-            <p className="sql-output-title">🔍 Executed SQL Query (Leaked):</p>
-            <pre className="sql-output-code">{sqlOutput}</pre>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label className="form-label">Username</label>
-            <input
-              className="form-input"
-              type="text"
-              placeholder="Enter username..."
-              value={form.username}
-              onChange={e => setForm({ ...form, username: e.target.value })}
-            />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Password</label>
-            <input
-              className="form-input"
-              type="password"
-              placeholder="Enter password..."
-              value={form.password}
-              onChange={e => setForm({ ...form, password: e.target.value })}
-            />
-          </div>
-          <button className="btn btn-primary btn-full" type="submit" disabled={loading}>
-            {loading ? '⏳ Signing in...' : '🔑 Sign In'}
-          </button>
-        </form>
-
-        <div className="auth-footer">
-          <p>Don't have an account? <Link to="/register">Register here</Link></p>
-        </div>
-
-        <div className="demo-creds">
-          <p className="demo-title">Demo Credentials</p>
-          <div className="demo-grid">
-            <div className="demo-item">
-              <span className="badge badge-customer">User</span>
-              <code>john_doe / password123</code>
+          <div className="auth-brand-features">
+            <div className="auth-feature-item">
+              <div className="auth-feature-dot" />
+              <span>Curated selection of premium products</span>
             </div>
-            <div className="demo-item">
-              <span className="badge badge-admin">Admin</span>
-              <code>admin / admin123</code>
+            <div className="auth-feature-item">
+              <div className="auth-feature-dot" />
+              <span>Secure checkout & fast delivery</span>
             </div>
+            <div className="auth-feature-item">
+              <div className="auth-feature-dot" />
+              <span>24/7 customer support</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Form panel */}
+        <div className="auth-form-panel">
+          <h1 className="auth-form-title">Welcome back</h1>
+          <p className="auth-form-subtitle">Sign in to your account to continue</p>
+
+          {error && (
+            <div className="alert alert-error">
+              <span>{error}</span>
+            </div>
+          )}
+
+          {sqlOutput && (
+            <div className="sql-output">
+              <p className="sql-output-title">Server Response</p>
+              <pre className="sql-output-code">{sqlOutput}</pre>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label className="form-label">Username</label>
+              <input
+                className="form-input"
+                type="text"
+                placeholder="Enter your username"
+                value={form.username}
+                onChange={e => setForm({ ...form, username: e.target.value })}
+                autoComplete="username"
+              />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Password</label>
+              <input
+                className="form-input"
+                type="password"
+                placeholder="Enter your password"
+                value={form.password}
+                onChange={e => setForm({ ...form, password: e.target.value })}
+                autoComplete="current-password"
+              />
+            </div>
+            <button className="btn btn-primary btn-full" type="submit" disabled={loading}>
+              {loading ? 'Signing in...' : 'Sign in'}
+            </button>
+          </form>
+
+          <div className="auth-footer">
+            <p>Don't have an account? <Link to="/register">Create one</Link></p>
           </div>
         </div>
       </div>

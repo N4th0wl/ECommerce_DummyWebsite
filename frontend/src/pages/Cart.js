@@ -25,7 +25,7 @@ const Cart = () => {
       setSuccess(res.data);
       clearCart();
     } catch (err) {
-      setError(err.response?.data?.error || 'Checkout failed');
+      setError(err.response?.data?.error || 'Checkout failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -34,17 +34,21 @@ const Cart = () => {
   if (success) {
     return (
       <div className="page-wrapper">
-        <div className="container" style={{ maxWidth: 500, textAlign: 'center' }}>
-          <div className="card" style={{ padding: 48 }}>
-            <div style={{ fontSize: 64, marginBottom: 16 }}>🎉</div>
-            <h2 style={{ fontFamily: "'Space Grotesk',sans-serif", fontSize: 28, fontWeight: 700, marginBottom: 8 }}>Order Placed!</h2>
-            <p style={{ color: 'var(--text-muted)', marginBottom: 8 }}>Order #{success.orderId}</p>
-            <p style={{ fontSize: 24, fontWeight: 800, color: 'var(--accent-secondary)', marginBottom: 24 }}>
-              Total: ${Number(success.total).toFixed(2)}
+        <div className="container" style={{ maxWidth: 520, textAlign: 'center', paddingTop: 64 }}>
+          <div className="card" style={{ padding: '48px 40px' }}>
+            <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(22,163,74,0.12)', border: '1px solid rgba(22,163,74,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+            <h2 style={{ fontFamily: "'DM Sans',sans-serif", fontSize: 24, fontWeight: 700, marginBottom: 8 }}>Order confirmed</h2>
+            <p style={{ color: 'var(--text-muted)', marginBottom: 6, fontSize: 14 }}>Order #{success.orderId}</p>
+            <p style={{ fontSize: 22, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 28, fontFamily: "'DM Sans',sans-serif" }}>
+              ${Number(success.total).toFixed(2)}
             </p>
-            <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-              <Link to="/dashboard" className="btn btn-primary">View Orders</Link>
-              <Link to="/" className="btn btn-secondary">Continue Shopping</Link>
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
+              <Link to="/dashboard" className="btn btn-primary">View orders</Link>
+              <Link to="/" className="btn btn-secondary">Continue shopping</Link>
             </div>
           </div>
         </div>
@@ -57,10 +61,9 @@ const Cart = () => {
       <div className="page-wrapper">
         <div className="container">
           <div className="empty-state">
-            <div className="icon">🛒</div>
             <h3>Your cart is empty</h3>
-            <p>Add some items to get started!</p>
-            <Link to="/" className="btn btn-primary" style={{ marginTop: 16 }}>🛍️ Shop Now</Link>
+            <p>Browse our products and find something you like</p>
+            <Link to="/" className="btn btn-primary" style={{ marginTop: 20 }}>Browse products</Link>
           </div>
         </div>
       </div>
@@ -70,24 +73,29 @@ const Cart = () => {
   return (
     <div className="page-wrapper">
       <div className="container">
-        <h1 className="section-title">🛒 Your Cart</h1>
+        <h1 className="section-title" style={{ marginBottom: 28 }}>Your cart</h1>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 24, alignItems: 'start' }}>
           {/* Cart Items */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {cart.map(item => (
-              <div key={item.id} className="card" style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-                <div style={{ fontSize: 48, flexShrink: 0 }}>📦</div>
+              <div key={item.id} className="card" style={{ display: 'flex', alignItems: 'center', gap: 20, padding: '18px 20px' }}>
+                <div style={{ width: 56, height: 56, background: 'var(--bg-elevated)', borderRadius: 'var(--radius-md)', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
+                  {item.category?.slice(0,2).toUpperCase()}
+                </div>
                 <div style={{ flex: 1 }}>
-                  <h3 style={{ fontWeight: 600, marginBottom: 4 }}>{item.name}</h3>
-                  <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>{item.category}</p>
+                  <h3 style={{ fontWeight: 600, fontSize: 14, marginBottom: 3 }}>{item.name}</h3>
+                  <p style={{ color: 'var(--text-muted)', fontSize: 12 }}>{item.category}</p>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <input type="number" className="form-input" min={1} style={{ width: 64 }}
+                  <input type="number" className="form-input" min={1} style={{ width: 60, padding: '6px 10px', textAlign: 'center' }}
                     value={item.quantity} onChange={e => updateQuantity(item.id, parseInt(e.target.value) || 1)} />
-                  <span style={{ fontWeight: 700, color: 'var(--accent-secondary)', minWidth: 80, textAlign: 'right' }}>
+                  <span style={{ fontWeight: 700, color: 'var(--text-primary)', minWidth: 72, textAlign: 'right', fontFamily: "'DM Sans',sans-serif" }}>
                     ${(item.price * item.quantity).toFixed(2)}
                   </span>
-                  <button className="btn btn-danger btn-sm" onClick={() => removeFromCart(item.id)}>✕</button>
+                  <button className="btn btn-secondary btn-sm" onClick={() => removeFromCart(item.id)}
+                    style={{ padding: '5px 10px', color: 'var(--text-muted)' }}>
+                    ✕
+                  </button>
                 </div>
               </div>
             ))}
@@ -95,12 +103,7 @@ const Cart = () => {
 
           {/* Order Summary */}
           <div className="card" style={{ position: 'sticky', top: 80 }}>
-            <h3 style={{ fontWeight: 700, marginBottom: 20 }}>Order Summary</h3>
-
-            <div className="alert alert-warning" style={{ marginBottom: 16, fontSize: 12 }}>
-              <span>⚠️</span>
-              <span>Shipping address field is vulnerable to SQLi!</span>
-            </div>
+            <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 20 }}>Order summary</h3>
 
             {cart.map(item => (
               <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 8, color: 'var(--text-secondary)' }}>
@@ -109,27 +112,27 @@ const Cart = () => {
               </div>
             ))}
 
-            <div style={{ height: 1, background: 'var(--border)', margin: '16px 0' }} />
+            <div className="divider" />
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, fontSize: 18, marginBottom: 20, fontFamily: "'Space Grotesk',sans-serif" }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: 17, marginBottom: 20, fontFamily: "'DM Sans',sans-serif" }}>
               <span>Total</span>
-              <span style={{ color: 'var(--accent-secondary)' }}>${total.toFixed(2)}</span>
+              <span>${total.toFixed(2)}</span>
             </div>
 
             <div className="form-group">
-              <label className="form-label">Shipping Address <span style={{ fontSize: 10, color: 'var(--danger)' }}>← SQLi Point</span></label>
-              <textarea className="form-input" rows={3} placeholder="Enter your shipping address..."
+              <label className="form-label">Shipping address</label>
+              <textarea className="form-input" rows={3} placeholder="Enter your full shipping address"
                 value={shipping} onChange={e => setShipping(e.target.value)} />
             </div>
 
-            {error && <div className="alert alert-error" style={{ marginBottom: 12 }}><span>❌</span> {error}</div>}
+            {error && <div className="alert alert-error" style={{ marginBottom: 12 }}><span>{error}</span></div>}
 
             <button className="btn btn-primary btn-full" onClick={handleCheckout} disabled={loading}>
-              {loading ? '⏳ Processing...' : '✅ Place Order'}
+              {loading ? 'Processing...' : 'Place order'}
             </button>
 
             <button className="btn btn-secondary btn-full" style={{ marginTop: 8 }} onClick={clearCart}>
-              🗑️ Clear Cart
+              Clear cart
             </button>
           </div>
         </div>

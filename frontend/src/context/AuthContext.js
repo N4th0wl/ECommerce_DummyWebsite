@@ -23,21 +23,24 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (username, password) => {
     const res = await axios.post(`${API_URL}/api/auth/login`, { username, password });
-    const { token: t, user: u } = res.data;
+    const { token: t, user: u, flag, message } = res.data;
     localStorage.setItem('token', t);
     axios.defaults.headers.common['Authorization'] = `Bearer ${t}`;
     setToken(t);
     setUser(u);
+    // Return full response so Login page can access flag
+    if (flag) return { ...u, flag, message, user: u };
     return u;
   };
 
   const register = async (username, email, password, bio) => {
     const res = await axios.post(`${API_URL}/api/auth/register`, { username, email, password, bio });
-    const { token: t, user: u } = res.data;
+    const { token: t, user: u, flag, message } = res.data;
     localStorage.setItem('token', t);
     axios.defaults.headers.common['Authorization'] = `Bearer ${t}`;
     setToken(t);
     setUser(u);
+    if (flag) return { ...u, flag, message };
     return u;
   };
 

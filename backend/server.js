@@ -40,6 +40,7 @@ const adminDir = path.join(__dirname, 'public/admin');
 fs.writeFileSync(path.join(backupDir, 'db_backup_2024.sql'), `-- Database Backup 2024-01-15
 -- ShopVuln Production Database Dump
 -- THIS FILE SHOULD NOT BE PUBLICLY ACCESSIBLE
+-- FLAG: UMNCySec{D4t4b4s3_B4ckup_F1l3_3xp0s3d}
 
 CREATE TABLE users (
   id INT, username VARCHAR(100), email VARCHAR(200),
@@ -49,10 +50,13 @@ CREATE TABLE users (
 INSERT INTO users VALUES (1,'admin','admin@shopvuln.local','admin123','admin');
 INSERT INTO users VALUES (2,'john_doe','john@example.com','password123','customer');
 INSERT INTO users VALUES (5,'bob_admin','bob@shopvuln.local','bob2024!','admin');
+
+-- FLAG: UMNCySec{Pl41nt3xt_P4ssw0rd_St0r4g3_F0und}
 `);
 
 fs.writeFileSync(path.join(configDir, 'config.txt'), `# ShopVuln Configuration File
 # DO NOT EXPOSE THIS FILE
+# FLAG: UMNCySec{C0nf1g_F1l3_L34k3d_Cr3ds}
 
 DB_HOST=mysql
 DB_USER=root
@@ -66,6 +70,7 @@ ADMIN_EMAIL=admin@shopvuln.local
 
 fs.writeFileSync(path.join(adminDir, 'notes.txt'), `# Admin Notes - Internal Use Only
 # DO NOT EXPOSE THIS FILE
+# FLAG: UMNCySec{4dm1n_N0t3s_1nt3rn4l_L34k}
 
 Admin Panel: /admin/dashboard
 Default Admin: admin / admin123
@@ -123,6 +128,10 @@ app.post('/api/auth/login', (req, res) => {
 
   console.log('[SQL QUERY]:', query); // Debug log (intentional)
 
+  // Detect SQLi patterns for CTF flag
+  const sqliPatterns = /('\s*--|'#|'\s*\/\*|'\s+OR\s+|'\s*OR\s*'|UNION\s+SELECT|1\s*=\s*1)/i;
+  const isSqli = sqliPatterns.test(username) || sqliPatterns.test(password);
+
   db.query(query, (err, results) => {
     if (err) {
       // VULN: Detailed error messages leak schema info
@@ -140,11 +149,19 @@ app.post('/api/auth/login', (req, res) => {
       { expiresIn: '24h' }
     );
 
-    res.json({
+    const response = {
       success: true,
       token,
       user: { id: user.id, username: user.username, email: user.email, role: user.role }
-    });
+    };
+
+    // CTF: Return flag if SQLi was detected in the login
+    if (isSqli) {
+      response.flag = 'UMNCySec{SQL_1nj3ct10n_Auth_Byp4ss_Succ3ss}';
+      response.message = '🚩 FLAG CAPTURED! You successfully bypassed authentication using SQL Injection!';
+    }
+
+    res.json(response);
   });
 });
 
@@ -155,6 +172,10 @@ app.post('/api/auth/register', (req, res) => {
   if (!username || !email || !password) {
     return res.status(400).json({ error: 'All fields are required' });
   }
+
+  // Detect XSS patterns for CTF flag
+  const xssPattern = /(<script|<img\s|<svg\s|<iframe|onerror|onload|onclick|javascript:|<\/script)/i;
+  const isXss = xssPattern.test(bio || '');
 
   // VULN: SQL Injection in registration
   const query = `INSERT INTO users (username, email, password, bio) VALUES ('${username}', '${email}', '${password}', '${bio || ''}')`;
@@ -171,11 +192,19 @@ app.post('/api/auth/register', (req, res) => {
       { expiresIn: '24h' }
     );
 
-    res.json({
+    const response = {
       success: true,
       token,
       user: { id: newUserId, username, email, role: 'customer' }
-    });
+    };
+
+    // CTF: Return flag if XSS was detected in bio
+    if (isXss) {
+      response.flag = 'UMNCySec{XSS_V1a_Us3r_B10_F13ld}';
+      response.message = 'FLAG CAPTURED! You injected XSS payload via the bio field!';
+    }
+
+    res.json(response);
   });
 });
 
@@ -224,11 +253,30 @@ app.get('/api/products', (req, res) => {
 
   console.log('[PRODUCT SEARCH QUERY]:', query);
 
+  // Detect UNION-based SQLi for CTF flag
+  const unionPattern = /UNION\s+SELECT/i;
+  const isSqliUnion = search && unionPattern.test(search);
+
   db.query(query, (err, results) => {
     if (err) {
       // VULN: Detailed error exposed
       return res.status(500).json({ error: err.message, query });
     }
+
+    // CTF: Append flag if UNION SQLi was detected
+    if (isSqliUnion && results.length > 0) {
+      results.push({
+        id: 9999,
+        name: 'FLAG: UMNCySec{UN10N_S3L3CT_Us3r_Dump_Compl3t3}',
+        description: 'Congratulations! You successfully performed a UNION-based SQL Injection to extract data!',
+        price: 0,
+        stock: 0,
+        category: 'CTF_FLAG',
+        image_url: '',
+        created_at: new Date()
+      });
+    }
+
     res.json(results);
   });
 });
@@ -278,12 +326,25 @@ app.post('/api/products/:id/reviews', authenticateToken, (req, res) => {
     return res.status(400).json({ error: 'Rating and comment are required' });
   }
 
+  // Detect XSS patterns for CTF flag
+  const xssPattern = /(<script|<img\s|<svg\s|<iframe|onerror|onload|onclick|javascript:|<\/script)/i;
+  const isXss = xssPattern.test(comment);
+
   // VULN: STORED XSS - comment inserted as-is, no sanitization
   const query = `INSERT INTO reviews (product_id, user_id, rating, comment) VALUES (${id}, ${userId}, ${rating}, '${comment}')`;
 
   db.query(query, (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
-    res.json({ success: true, id: results.insertId });
+
+    const response = { success: true, id: results.insertId };
+
+    // CTF: Return flag if XSS was detected in review comment
+    if (isXss) {
+      response.flag = 'UMNCySec{St0r3d_XSS_1n_R3v13w_F13ld}';
+      response.message = 'FLAG CAPTURED! You injected a Stored XSS payload in the review!';
+    }
+
+    res.json(response);
   });
 });
 
@@ -292,6 +353,9 @@ app.post('/api/products/:id/reviews', authenticateToken, (req, res) => {
 app.get('/api/orders', authenticateToken, (req, res) => {
   // VULN: IDOR - users can view other users' orders by manipulating user_id param
   const userId = req.query.user_id || req.user.id;
+
+  // CTF: Detect IDOR — user accessing someone else's orders
+  const isIdor = req.query.user_id && parseInt(req.query.user_id) !== req.user.id;
 
   const query = `
     SELECT o.*, u.username, u.email 
@@ -303,6 +367,16 @@ app.get('/api/orders', authenticateToken, (req, res) => {
 
   db.query(query, (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
+
+    // CTF: Return flag if IDOR was detected
+    if (isIdor && results.length > 0) {
+      return res.json({
+        flag: 'UMNCySec{1D0R_0th3r_Us3r_0rd3r_4cc3ss}',
+        message: '\ud83d\udea9 FLAG CAPTURED! You accessed another user\'s orders via IDOR!',
+        orders: results
+      });
+    }
+
     res.json(results);
   });
 });
@@ -364,12 +438,30 @@ app.get('/api/admin/users', authenticateToken, (req, res) => {
     return res.status(403).json({ error: 'Admin access required' });
   }
 
-  // VULN: Returns ALL user data including passwords
-  const query = `SELECT * FROM users ORDER BY id`;
+  // CTF: Detect JWT forgery — check if user ID exists in DB
+  const checkQuery = `SELECT id FROM users WHERE id = ${req.user.id}`;
+  db.query(checkQuery, (checkErr, checkResults) => {
+    const isForged = (!checkErr && checkResults.length === 0) || req.user.id >= 900;
 
-  db.query(query, (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(results);
+    // VULN: Returns ALL user data including passwords
+    const query = `SELECT * FROM users ORDER BY id`;
+
+    db.query(query, (err, results) => {
+      if (err) return res.status(500).json({ error: err.message });
+
+      const response = {
+        users: results,
+        flag_plaintext: 'UMNCySec{Pl41nt3xt_P4ssw0rd_St0r4g3_F0und}'
+      };
+
+      // CTF: Additional flag if JWT was forged
+      if (isForged) {
+        response.flag_jwt = 'UMNCySec{JWT_T0k3n_F0rg3d_4dm1n_4cc3ss}';
+        response.message = '\ud83d\udea9 FLAG CAPTURED! You forged a JWT token to gain admin access!';
+      }
+
+      res.json(response);
+    });
   });
 });
 
@@ -393,12 +485,24 @@ app.put('/api/users/profile', authenticateToken, (req, res) => {
   const { bio, email } = req.body;
   const userId = req.user.id;
 
+  // Detect XSS patterns for CTF flag
+  const xssPattern = /(<script|<img\s|<svg\s|<iframe|onerror|onload|onclick|javascript:|<\/script)/i;
+  const isXss = xssPattern.test(bio || '');
+
   // VULN: SQL Injection + Stored XSS via bio field
   const query = `UPDATE users SET bio = '${bio}', email = '${email}' WHERE id = ${userId}`;
 
   db.query(query, (err) => {
     if (err) return res.status(500).json({ error: err.message, query });
-    res.json({ success: true });
+
+    const response = { success: true };
+
+    if (isXss) {
+      response.flag = 'UMNCySec{XSS_V1a_Us3r_B10_F13ld}';
+      response.message = '\ud83d\udea9 FLAG CAPTURED! You injected XSS payload via profile bio update!';
+    }
+
+    res.json(response);
   });
 });
 
@@ -414,7 +518,8 @@ app.get('/api/health', (req, res) => {
     platform: process.platform,
     environment: process.env.NODE_ENV || 'development',
     db_host: process.env.DB_HOST || 'mysql',
-    uptime: process.uptime()
+    uptime: process.uptime(),
+    flag: 'UMNCySec{S3rv3r_1nf0_D1scl0sur3_H34lth}'
   });
 });
 
@@ -428,6 +533,8 @@ Disallow: /config/
 Disallow: /api/admin/
 Disallow: /.env
 Disallow: /database/
+
+# FLAG: UMNCySec{R0b0ts_Txt_R3c0n_Succ3ss}
 `);
 });
 
